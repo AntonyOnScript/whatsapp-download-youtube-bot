@@ -1,0 +1,42 @@
+image: docker:latest
+
+services:
+  - docker:dind
+
+stages:
+  - release
+  - deploy
+
+variables:
+  AWS_REGION: us-east-1
+  ECR_REPO: ${ECR_REPO}
+  LOCAL_REPO: ${LOCAL_REPO}
+  ACK_ID: ${ACK_ID}
+  SAK: ${SAK}
+
+before_script:
+  - apk add --no-cache py-pip
+  - pip install awscli
+  - aws configure set aws_access_key_id $ACK_ID
+  - aws configure set aws_secret_access_key $SAK
+  - aws configure set default.region us-east-1
+
+Release Docker Image:
+  stage: release
+  script:
+    - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO
+    - docker pull $ECR_REPO
+    - docker build -t $LOCAL_REPO .
+    - docker tag $LOCAL_REPO:latest $ECR_REPO:latest
+    - docker push $ECR_REPO:latest
+  only:
+    - master
+      
+Deploy Lambda Code:
+  stage: deploy
+  script:
+    - apk add --no-cache py-pip
+    - pip install awscli
+    - aws lambda update-function-code --function-name lambda_node-down-ytb --image-uri $ECR_REPO:latest
+  only:
+    - master
