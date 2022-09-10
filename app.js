@@ -40,7 +40,7 @@ async function generateVideo(url, title) {
             }
             
             const writter = fs.createWriteStream(dir)
-            const streamYtb = ytdl(url).pipe(writter)
+            const streamYtb = ytdl(url, { filter: 'videoandaudio' }).pipe(writter)
             await new Promise((resolve) => {
                 streamYtb.on('finish', async () => {
                     const fileStream = fs.createReadStream(dir)
