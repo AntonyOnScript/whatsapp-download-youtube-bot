@@ -8,11 +8,11 @@ stages:
   - deploy
 
 variables:
-  AWS_REGION: us-east-1
-  ECR_REPO: ${ECR_REPO}
-  LOCAL_REPO: ${LOCAL_REPO}
-  ACK_ID: ${ACK_ID}
-  SAK: ${SAK}
+  AWS_REGION: "us-east-1"
+  ECR_REPO: "$ECR_REPO"
+  LOCAL_REPO: "$LOCAL_REPO"
+  ACK_ID: "$ACK_ID"
+  SAK: "$SAK"
 
 before_script:
   - apk add --no-cache py-pip
