@@ -10,7 +10,7 @@ const S3 = new AWS.S3({
 })
 
 async function generateVideo(url, title) {
-    return await new Promise(async (resolve, reject) => {
+    return await new Promise(async (resolve) => {
         const dir = `/tmp/videos/${title}.mp4`
         const S3Url = `https://${bucket}.s3.amazonaws.com/${encodeURIComponent(title).replaceAll('%20', '+')}.mp4`
         if(!fs.existsSync(`/tmp/videos/`)) fs.mkdirSync(`/tmp/videos/`)
@@ -62,14 +62,14 @@ async function generateVideo(url, title) {
             resolve(S3Url)
         } catch (err) {
             console.log(err)
-            return reject(err.message)
+            resolve(err.message)
         }
     })
 }
 
-exports.handler = async (event, context) => {
+exports.handler = async (event) => {
     const videoLink = event.queryStringParameters?.v
-    let response = {}
+    let response = responseBuilder.buildApiGatewayOkResponse({ message: 'no video pass with ?v=youtube_link' })
     if (videoLink) {
         const isTrustedLink = ytdl.validateURL(videoLink)
         if (isTrustedLink) {
@@ -77,8 +77,10 @@ exports.handler = async (event, context) => {
             const title = data.videoDetails.title
             const link = await generateVideo(videoLink, title)
             response = responseBuilder.buildApiGatewayOkResponse({ message: link })
+            console.log('response video link ', response)
+            return response
         }
     }
-
+    console.log('response no video link ', response)
     return response
 }
