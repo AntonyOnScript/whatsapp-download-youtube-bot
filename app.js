@@ -11,10 +11,13 @@ const S3 = new AWS.S3({
 
 async function generateVideo(url, title) {
     return await new Promise(async (resolve) => {
+        console.log(0)
         const dir = `/tmp/videos/${title}.mp4`
         const S3Url = `https://${bucket}.s3.amazonaws.com/${encodeURIComponent(title).replaceAll('%20', '+')}.mp4`
         if(!fs.existsSync(`/tmp/videos/`)) fs.mkdirSync(`/tmp/videos/`)
+        console.log(1)
         try {
+            console.log(2)
             await new Promise((resolve, reject) => {
                 fs.stat(dir, (err, stats) => {
                     console.log(err, stats)
@@ -23,6 +26,7 @@ async function generateVideo(url, title) {
                     return resolve('ok')
                 })
             })
+            console.log(3)
             
             try {
                 await new Promise((resolve, reject) => {
@@ -38,7 +42,7 @@ async function generateVideo(url, title) {
             } catch(e) {
                 throw new Error(e)
             }
-            
+            console.log(4)
             const writter = fs.createWriteStream(dir)
             const streamYtb = ytdl(url, { filter: 'videoandaudio' }).pipe(writter)
             await new Promise((resolve) => {
@@ -59,8 +63,10 @@ async function generateVideo(url, title) {
                     fs.rmSync(dir)
                 })
             })
+            console.log(5)
             resolve(S3Url)
         } catch (err) {
+            console.log(6)
             console.log(err)
             resolve(err.message)
         }
@@ -68,19 +74,33 @@ async function generateVideo(url, title) {
 }
 
 exports.handler = async (event) => {
-    const videoLink = event.queryStringParameters?.v
     let response = responseBuilder.buildApiGatewayOkResponse({ message: 'no video pass with ?v=youtube_link' })
-    if (videoLink) {
-        const isTrustedLink = ytdl.validateURL(videoLink)
-        if (isTrustedLink) {
-            const data = await ytdl.getInfo(videoLink)
-            const title = data.videoDetails.title
-            const link = await generateVideo(videoLink, title)
-            response = responseBuilder.buildApiGatewayOkResponse({ message: link })
-            console.log('response video link ', response)
-            return response
+    try {
+        const videoLink = event.queryStringParameters?.v
+        console.log('video link', videoLink, event)
+        if (videoLink) {
+            const isTrustedLink = ytdl.validateURL(videoLink)
+            console.log('is link ', isTrustedLink)
+            if (isTrustedLink) {
+                console.log('a')
+                console.log(ytdl)
+                const data = await ytdl.getInfo(videoLink)
+                console.log('b')
+                const title = data.videoDetails.title
+                console.log('c')
+                const link = await generateVideo(videoLink, title)
+                console.log('d')
+                response = responseBuilder.buildApiGatewayOkResponse({ message: link })
+                console.log('response video link ', response)
+                console.log(7)
+                return response
+            }
         }
+        console.log('response no video link ', response)
+        console.log(8)
+        return response
+    } catch(e) {
+        console.log(e)
+        return response
     }
-    console.log('response no video link ', response)
-    return response
 }
