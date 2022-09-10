@@ -11,9 +11,9 @@ const S3 = new AWS.S3({
 
 async function generateVideo(url, title) {
     return await new Promise(async (resolve, reject) => {
-        const dir = `${__dirname}/videos/${title}.mp4`
+        const dir = `/tmp/videos/${title}.mp4`
         const S3Url = `https://${bucket}.s3.amazonaws.com/${encodeURIComponent(title).replaceAll('%20', '+')}.mp4`
-        if(!fs.existsSync(`${__dirname}/videos/`)) fs.mkdirSync(`${__dirname}/videos/`)
+        if(!fs.existsSync(`/tmp/videos/`)) fs.mkdirSync(`/tmp/videos/`)
         try {
             await new Promise((resolve, reject) => {
                 fs.stat(dir, (err, stats) => {
