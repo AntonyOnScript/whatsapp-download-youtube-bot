@@ -1,0 +1,36 @@
+frameworkVersion: "3"
+service: lambda
+
+plugins:
+    - serverless-offline
+
+package:
+    exclude:
+        - .git
+        - .gitignore
+        - .serverless**
+        - events/*.json
+        - README.md
+  
+provider:
+    name: aws
+    runtime: nodejs12.x
+    timeout: 200
+    environment:
+        bucket: ${env:bucket}
+        accessKeyId: ${env:accessKeyId}
+        secretAccessKey: ${env:secretAccessKey}
+
+custom:
+    serverless-offline:
+        port: 3000
+        host: 0.0.0.0
+
+functions:
+  hello:
+    handler: app.handler
+    timeout: 200
+    events:
+      - httpApi:
+          path: /
+          method: get

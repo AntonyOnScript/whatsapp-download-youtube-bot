@@ -1,0 +1,14 @@
+FROM node:16-alpine
+WORKDIR /app
+COPY package.json ./
+RUN apk update &&\
+    apk upgrade &&\
+    apk add --no-cache git ca-certificates wget openssh git docker &&\
+    update-ca-certificates &&\
+    yarn;
+COPY . .
+ENV bucket=${bucket}
+ENV accessKeyId=${accessKeyId}
+ENV secretAccessKey=${secretAccessKey}
+EXPOSE 3000 3002
+CMD yarn serve

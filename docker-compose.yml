@@ -1,0 +1,15 @@
+services:
+  lambda:
+    environment:
+      bucket: ${bucket}
+      accessKeyId: ${accessKeyId}
+      secretAccessKey: ${secretAccessKey}
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - 3000:3000
+      - 3002:3002
+    volumes:
+      - ./:/app
+      - /app/node_modules

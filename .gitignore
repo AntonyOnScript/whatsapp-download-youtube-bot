@@ -1,2 +1,10 @@
+# package directories
 node_modules
+jspm_packages
+
+# Serverless directories
+.serverless
+
+# envs
+>>>>>>> 59e3b67 (feat: download youtube videos and update to S3 Bucket)
 .env
