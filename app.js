@@ -8,6 +8,7 @@ const S3 = new AWS.S3({
     accessKeyId,
     secretAccessKey
 })
+const { Buffer } = require('node:buffer')
 
 async function generateVideo(url, title) {
     return await new Promise(async (resolve) => {
@@ -71,21 +72,47 @@ async function generateVideo(url, title) {
 exports.handler = async (event, context) => {
     console.log(event, context)
     let response = responseBuilder.buildApiGatewayOkResponse({ message: 'no video pass with ?v=youtube_link' })
-    try {
-        const videoLink = event.queryStringParameters?.v
-        if (videoLink) {
-            const isTrustedLink = ytdl.validateURL(videoLink)
-            if (isTrustedLink) {
-                const data = await ytdl.getInfo(videoLink)
-                const title = data.videoDetails.title
-                const link = await generateVideo(videoLink, title)
-                response = responseBuilder.buildApiGatewayOkResponse({ message: link })
+    if (event.httpMethod === 'GET') {
+        try {
+            const videoLink = event.queryStringParameters?.v
+            if (videoLink) {
+                const isTrustedLink = ytdl.validateURL(videoLink)
+                if (isTrustedLink) {
+                    const data = await ytdl.getInfo(videoLink)
+                    const title = data.videoDetails.title
+                    const link = await generateVideo(videoLink, title)
+                    response = responseBuilder.buildApiGatewayOkResponse({ message: link })
+                    return response
+                }
+            }
+            return response
+        } catch(e) {
+            console.log(e)
+            return response
+        }
+    } else if (event.httpMethod === 'POST') {
+        if (event?.body && event?.isBase64Encoded === true) {
+            let bodyContent = `${Buffer.from(event.body, 'base64').toString('base64')}`
+            bodyContent = new URLSearchParams(bodyContent)
+            const videoLink = bodyContent.get('Body')
+            try {
+                if (videoLink) {
+                    const isTrustedLink = ytdl.validateURL(videoLink)
+                    if (isTrustedLink) {
+                        const data = await ytdl.getInfo(videoLink)
+                        const title = data.videoDetails.title
+                        const link = await generateVideo(videoLink, title)
+                        response = responseBuilder.buildApiGatewayOkResponse({ message: link })
+                        return response
+                    }
+                }
+                return response
+            } catch(e) {
+                console.log(e)
                 return response
             }
         }
-        return response
-    } catch(e) {
-        console.log(e)
-        return response
     }
+
+    return response
 }
