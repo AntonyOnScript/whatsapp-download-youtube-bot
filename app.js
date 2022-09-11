@@ -122,6 +122,11 @@ exports.handler = async (event, context) => {
                     if (isTrustedLink) {
                         const fromNumber = bodyContent.get('From')
                         const toNumber = bodyContent.get('To')
+                        await client.messages.create({
+                            from: toNumber,
+                            body: 'Baixando seu vídeo...',
+                            to: fromNumber
+                        })
                         const data = await ytdl.getInfo(videoLink)
                         const title = data.videoDetails.title
                         const link = await generateVideo(videoLink, title)
