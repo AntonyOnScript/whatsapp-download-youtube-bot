@@ -19,21 +19,35 @@ async function generateVideo(url, title) {
         const S3Url = `https://${bucket}.s3.amazonaws.com/${encodeURIComponent(title).replaceAll('%20', '+')}.mp4`
         if(!fs.existsSync(`/tmp/videos/`)) fs.mkdirSync(`/tmp/videos/`)
         try {
-            try {
-                await new Promise((resolve, reject) => {
-                    S3.getObject({
-                        Bucket: bucket,
-                        Key: `${title}.mp4`
-                    }, (err, data) => {
-                        console.log(err, data)
-                        if (err) resolve()
-                        if (data) reject(S3Url) 
-                    })
+            // check if video already exists in S3
+            const S3ObjectData = await new Promise((resolve) => {
+                S3.getObject({
+                    Bucket: bucket,
+                    Key: `${title}.mp4`
+                }, (err, data) => {
+                    console.log(err, data)
+                    if (data) resolve(data)
+                    resolve()
                 })
-            } catch(e) {
-                throw new Error(e)
+            })
+            if (S3ObjectData) {
+                if (S3ObjectData?.ContentLength < 16777216 && S3ObjectData?.ContentLength > 0) {
+                    console.log('video exists in s3')
+                    resolve({
+                        mediaResponse: true,
+                        S3Url
+                    })
+                } else if (S3ObjectData?.ContentLength >= 16777216) {
+                    console.log('video exists in s3')
+                    resolve({
+                        mediaResponse: false,
+                        S3Url
+                    })
+                }
             }
 
+            // generate video if it doesn't exist in S3
+            console.log('video doesn\'t exist in s3')
             const writter = fs.createWriteStream(dir)
             const streamYtb = ytdl(url, { filter: 'videoandaudio' }).pipe(writter)
             await new Promise((resolve) => {
@@ -55,10 +69,12 @@ async function generateVideo(url, title) {
                 })
             })
 
-            resolve(S3Url)
+            resolve({
+                mediaResponse: false,
+                S3Url
+            })
         } catch (err) {
             console.log(err)
-            resolve(err.message)
         }
     })
 }
@@ -77,8 +93,7 @@ exports.handler = async (event, context) => {
                     const data = await ytdl.getInfo(videoLink)
                     const title = data.videoDetails.title
                     const link = await generateVideo(videoLink, title)
-                    response = responseBuilder.buildApiGatewayOkResponse(link)
-                    response.headers['Content-Type'] = 'plain/text'
+                    response = responseBuilder.buildApiGatewayOkResponse(link.S3Url)
                     return response
                 }
             }
@@ -102,15 +117,24 @@ exports.handler = async (event, context) => {
                         const data = await ytdl.getInfo(videoLink)
                         const title = data.videoDetails.title
                         const link = await generateVideo(videoLink, title)
-                        response = responseBuilder.buildApiGatewayOkResponse('Pronto!')
+                        response = responseBuilder.buildApiGatewayOkResponse()
                         response.headers['Content-Type'] = 'text/plain'
                         try {
-                            const message = await client.messages.create({
-                                from: toNumber,
-                                body: link,
-                                to: fromNumber
-                            })
-                            console.log(message)
+                            if (link.mediaResponse === true) {
+                                const message = await client.messages.create({
+                                    from: toNumber,
+                                    mediaUrl: [link.S3Url],
+                                    to: fromNumber
+                                })
+                                console.log(message)
+                            } else {
+                                const message = await client.messages.create({
+                                    from: toNumber,
+                                    body: link.S3Url,
+                                    to: fromNumber
+                                })
+                                console.log(message)
+                            }
                         } catch(e) {
                             console.log(e)
                         }
