@@ -16,15 +16,6 @@ async function generateVideo(url, title) {
         const S3Url = `https://${bucket}.s3.amazonaws.com/${encodeURIComponent(title).replaceAll('%20', '+')}.mp4`
         if(!fs.existsSync(`/tmp/videos/`)) fs.mkdirSync(`/tmp/videos/`)
         try {
-            await new Promise((resolve, reject) => {
-                fs.stat(dir, (err, stats) => {
-                    console.log(err, stats)
-                    if (stats)
-                        return reject('file already exists')
-                    return resolve('ok')
-                })
-            })
-            
             try {
                 await new Promise((resolve, reject) => {
                     S3.getObject({
@@ -92,13 +83,10 @@ exports.handler = async (event, context) => {
         }
     } else if (event.httpMethod === 'POST') {
         if (event?.body && event?.isBase64Encoded === true) {
-            console.log('raw body ', event.body)
             let bodyContent = `${Buffer.from(event.body, 'base64').toString('utf8')}`
-            console.log('body content ', bodyContent)
             bodyContent = new URLSearchParams(bodyContent)
-            console.log('body params ', bodyContent)
+            console.log('twilio body content ', bodyContent)
             const videoLink = bodyContent.get('Body')
-            console.log('video link ', videoLink)
             try {
                 if (videoLink) {
                     const isTrustedLink = ytdl.validateURL(videoLink)
