@@ -26,20 +26,20 @@ async function generateVideo(url, title) {
                     Key: `${title}.mp4`
                 }, (err, data) => {
                     console.log(err, data)
-                    if (data) resolve(data)
-                    resolve()
+                    if (data) return resolve(data)
+                    return resolve()
                 })
             })
             if (S3ObjectData) {
                 if (S3ObjectData?.ContentLength < 16777216 && S3ObjectData?.ContentLength > 0) {
                     console.log('video exists in s3')
-                    resolve({
+                    return resolve({
                         mediaResponse: true,
                         S3Url
                     })
                 } else if (S3ObjectData?.ContentLength >= 16777216) {
                     console.log('video exists in s3')
-                    resolve({
+                    return resolve({
                         mediaResponse: false,
                         S3Url
                     })
@@ -50,7 +50,7 @@ async function generateVideo(url, title) {
             console.log('video doesn\'t exist in s3')
             const writter = fs.createWriteStream(dir)
             const streamYtb = ytdl(url, { filter: 'videoandaudio' }).pipe(writter)
-            await new Promise((resolve) => {
+            const linkObject = await new Promise((resolve) => {
                 streamYtb.on('finish', async () => {
                     const fileStream = fs.createReadStream(dir)
                     await new Promise((resolve) => {
@@ -61,18 +61,26 @@ async function generateVideo(url, title) {
                             ContentType: 'video/mp4'
                         }, (err, data) => {
                             console.log(err, data)
-                            resolve()
+                            return resolve()
                         })
                     })
-                    resolve()
+                    const fileSize = fs.statSync(dir).size
+                    console.log(`file size ${fileSize}`)
                     fs.rmSync(dir)
+                    if (fileSize < 16777216) {
+                        return resolve({
+                            mediaResponse: true,
+                            S3Url
+                        })
+                    }
+                    return resolve({
+                        mediaResponse: false,
+                        S3Url
+                    })
                 })
             })
 
-            resolve({
-                mediaResponse: false,
-                S3Url
-            })
+            return resolve(linkObject)
         } catch (err) {
             console.log(err)
         }
@@ -82,9 +90,8 @@ async function generateVideo(url, title) {
 exports.handler = async (event, context) => {
     console.log(event, context)
     let response = responseBuilder.buildApiGatewayOkResponse('no video pass with ?v=youtube_link')
-    response.headers['Content-Type'] = 'plain/text'
 
-    if (event.httpMethod === 'GET') {
+    if (event.requestContext.http.method === 'GET') {
         try {
             const videoLink = event.queryStringParameters?.v
             if (videoLink) {
@@ -93,6 +100,7 @@ exports.handler = async (event, context) => {
                     const data = await ytdl.getInfo(videoLink)
                     const title = data.videoDetails.title
                     const link = await generateVideo(videoLink, title)
+                    console.log(link)
                     response = responseBuilder.buildApiGatewayOkResponse(link.S3Url)
                     return response
                 }
@@ -118,7 +126,6 @@ exports.handler = async (event, context) => {
                         const title = data.videoDetails.title
                         const link = await generateVideo(videoLink, title)
                         response = responseBuilder.buildApiGatewayOkResponse()
-                        response.headers['Content-Type'] = 'text/plain'
                         try {
                             if (link.mediaResponse === true) {
                                 const message = await client.messages.create({
