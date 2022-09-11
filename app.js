@@ -106,11 +106,11 @@ exports.handler = async (event, context) => {
                         response.headers['Content-Type'] = 'text/plain'
                         try {
                             const message = await client.messages.create({
-                                from: fromNumber,
+                                from: toNumber,
                                 body: link,
-                                to: toNumber
+                                to: fromNumber
                             })
-                            console.log('message ', message)
+                            console.log(message)
                         } catch(e) {
                             console.log(e)
                         }
