@@ -93,7 +93,7 @@ exports.handler = async (event, context) => {
     } else if (event.httpMethod === 'POST') {
         if (event?.body && event?.isBase64Encoded === true) {
             console.log('raw body ', event.body)
-            let bodyContent = `${Buffer.from(event.body, 'base64').toString('base64')}`
+            let bodyContent = `${Buffer.from(event.body, 'base64').toString('utf8')}`
             console.log('body content ', bodyContent)
             bodyContent = new URLSearchParams(bodyContent)
             console.log('body params ', bodyContent)
