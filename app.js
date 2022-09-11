@@ -9,6 +9,9 @@ const S3 = new AWS.S3({
     secretAccessKey
 })
 const { Buffer } = require('node:buffer')
+const accountSid = process.env.TWILIO_ACCOUNT_SID
+const authToken = process.env.TWILIO_AUTH_TOKEN
+const client = require('twilio')(accountSid, authToken)
 
 async function generateVideo(url, title) {
     return await new Promise(async (resolve) => {
@@ -64,6 +67,7 @@ exports.handler = async (event, context) => {
     console.log(event, context)
     let response = responseBuilder.buildApiGatewayOkResponse('no video pass with ?v=youtube_link')
     response.headers['Content-Type'] = 'plain/text'
+
     if (event.httpMethod === 'GET') {
         try {
             const videoLink = event.queryStringParameters?.v
@@ -93,11 +97,23 @@ exports.handler = async (event, context) => {
                 if (videoLink) {
                     const isTrustedLink = ytdl.validateURL(videoLink)
                     if (isTrustedLink) {
+                        const fromNumber = bodyContent.get('From')
+                        const toNumber = bodyContent.get('To')
                         const data = await ytdl.getInfo(videoLink)
                         const title = data.videoDetails.title
                         const link = await generateVideo(videoLink, title)
-                        response = responseBuilder.buildApiGatewayOkResponse(link)
+                        response = responseBuilder.buildApiGatewayOkResponse('Pronto!')
                         response.headers['Content-Type'] = 'text/plain'
+                        try {
+                            const message = await client.messages.create({
+                                from: fromNumber,
+                                body: link,
+                                to: toNumber
+                            })
+                            console.log('message ', message)
+                        } catch(e) {
+                            console.log(e)
+                        }
                         return response
                     }
                 }

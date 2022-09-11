@@ -4,6 +4,8 @@ services:
       bucket: ${bucket}
       accessKeyId: ${accessKeyId}
       secretAccessKey: ${secretAccessKey}
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN}
     build:
       context: .
       dockerfile: Dockerfile.dev
