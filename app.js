@@ -91,7 +91,7 @@ exports.handler = async (event, context) => {
     console.log(event, context)
     let response = responseBuilder.buildApiGatewayOkResponse('no video pass with ?v=youtube_link')
 
-    if (event.requestContext.http.method === 'GET') {
+    if (event.httpMethod === 'GET') {
         try {
             const videoLink = event.queryStringParameters?.v
             if (videoLink) {
