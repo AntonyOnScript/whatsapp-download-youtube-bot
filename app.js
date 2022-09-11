@@ -62,7 +62,8 @@ async function generateVideo(url, title) {
 
 exports.handler = async (event, context) => {
     console.log(event, context)
-    let response = responseBuilder.buildApiGatewayOkResponse({ message: 'no video pass with ?v=youtube_link' })
+    let response = responseBuilder.buildApiGatewayOkResponse('no video pass with ?v=youtube_link')
+    response.headers['Content-Type'] = 'plain/text'
     if (event.httpMethod === 'GET') {
         try {
             const videoLink = event.queryStringParameters?.v
@@ -72,7 +73,8 @@ exports.handler = async (event, context) => {
                     const data = await ytdl.getInfo(videoLink)
                     const title = data.videoDetails.title
                     const link = await generateVideo(videoLink, title)
-                    response = responseBuilder.buildApiGatewayOkResponse({ message: link })
+                    response = responseBuilder.buildApiGatewayOkResponse(link)
+                    response.headers['Content-Type'] = 'plain/text'
                     return response
                 }
             }
@@ -94,7 +96,8 @@ exports.handler = async (event, context) => {
                         const data = await ytdl.getInfo(videoLink)
                         const title = data.videoDetails.title
                         const link = await generateVideo(videoLink, title)
-                        response = responseBuilder.buildApiGatewayOkResponse({ message: link })
+                        response = responseBuilder.buildApiGatewayOkResponse(link)
+                        response.headers['Content-Type'] = 'text/plain'
                         return response
                     }
                 }

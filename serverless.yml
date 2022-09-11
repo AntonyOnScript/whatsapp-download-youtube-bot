@@ -14,7 +14,7 @@ package:
   
 provider:
     name: aws
-    runtime: nodejs12.x
+    runtime: nodejs16.x
     timeout: 200
     environment:
         bucket: ${env:bucket}
