@@ -14,9 +14,10 @@ const authToken = process.env.TWILIO_AUTH_TOKEN
 const client = require('twilio')(accountSid, authToken)
 
 async function generateVideo(url, title) {
+    title = encodeURIComponent(title).replaceAll('%20', '+')
     return await new Promise(async (resolve) => {
         const dir = `/tmp/videos/${title}.mp4`
-        const S3Url = `https://${bucket}.s3.amazonaws.com/${encodeURIComponent(title).replaceAll('%20', '+')}.mp4`
+        const S3Url = `https://${bucket}.s3.amazonaws.com/${title}.mp4`
         if(!fs.existsSync(`/tmp/videos/`)) fs.mkdirSync(`/tmp/videos/`)
         try {
             // check if video already exists in S3
