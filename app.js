@@ -119,6 +119,7 @@ exports.handler = async (event, context) => {
             const videoLink = bodyContent.get('Body')
             try {
                 if (videoLink) {
+                    console.log('before validate url')
                     const isTrustedLink = ytdl.validateURL(videoLink)
                     if (isTrustedLink) {
                         const fromNumber = bodyContent.get('From')
@@ -128,6 +129,7 @@ exports.handler = async (event, context) => {
                             body: 'Baixando seu vídeo...',
                             to: fromNumber
                         })
+                        console.log('before get info')
                         const data = await ytdl.getInfo(videoLink)
                         console.log(data)
                         const title = data.videoDetails.title
