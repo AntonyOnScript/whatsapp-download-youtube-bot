@@ -129,6 +129,7 @@ exports.handler = async (event, context) => {
                             to: fromNumber
                         })
                         const data = await ytdl.getInfo(videoLink)
+                        console.log(data)
                         const title = data.videoDetails.title
                         const link = await generateVideo(videoLink, title)
                         response = responseBuilder.buildApiGatewayOkResponse()
