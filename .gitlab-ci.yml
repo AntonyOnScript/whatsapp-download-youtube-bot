@@ -8,7 +8,7 @@ stages:
   - deploy
 
 variables:
-  AWS_REGION: "us-east-1"
+  AWS_REGION: "sa-east-1"
   ECR_REPO: "$ECR_REPO"
   LOCAL_REPO: "$LOCAL_REPO"
   ACK_ID: "$ACK_ID"
@@ -19,7 +19,7 @@ before_script:
   - pip install awscli
   - aws configure set aws_access_key_id $ACK_ID
   - aws configure set aws_secret_access_key $SAK
-  - aws configure set default.region us-east-1
+  - aws configure set default.region $AWS_REGION
 
 Release Docker Image:
   stage: release
