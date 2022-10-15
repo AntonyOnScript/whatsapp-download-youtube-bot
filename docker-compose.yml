@@ -11,7 +11,9 @@ services:
       dockerfile: Dockerfile.dev
     ports:
       - 3000:3000
-      - 3002:3002
+      - 3003:3003
     volumes:
       - ./:/app
-      - /app/node_modules
+      - ./videos/:/tmp/videos
+      - ./s3:/tmp/s3
+      - /app/node_modules/

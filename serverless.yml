@@ -3,6 +3,7 @@ service: lambda
 
 plugins:
     - serverless-offline
+    - serverless-s3-local
 
 package:
     exclude:
@@ -25,14 +26,38 @@ provider:
 
 custom:
     serverless-offline:
-        port: 3000
+        port: 3003
         host: 0.0.0.0
+        resourceRoutes: true
+    s3:
+        host: localhost
+        port: 3003
+        directory: /tmp/s3
 
+resources:
+  Resources:
+    NewResource:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: local-bucket
+        
 functions:
-  hello:
+  getYoutubeVideo:
     handler: app.handler
     timeout: 200
     events:
       - httpApi:
           path: /
           method: get
+  postYoutubeVideo:
+    handler: app.handler
+    timeout: 200
+    events:
+      - httpApi:
+          path: /
+          method: post
+  s3hook:
+    handler: app.s3hook
+    events:
+      - s3: local-bucket
+        event: s3:*

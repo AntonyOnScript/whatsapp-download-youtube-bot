@@ -10,5 +10,4 @@ COPY . .
 ENV bucket=${bucket}
 ENV accessKeyId=${accessKeyId}
 ENV secretAccessKey=${secretAccessKey}
-EXPOSE 3000 3002
 CMD yarn serve
