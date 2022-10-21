@@ -26,8 +26,8 @@ provider:
 
 custom:
     serverless-offline:
-        port: 3003
         host: 0.0.0.0
+        port: 3003
         resourceRoutes: true
     s3:
         host: localhost
@@ -56,8 +56,3 @@ functions:
       - httpApi:
           path: /
           method: post
-  s3hook:
-    handler: app.s3hook
-    events:
-      - s3: local-bucket
-        event: s3:*

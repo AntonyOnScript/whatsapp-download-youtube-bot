@@ -3,18 +3,24 @@ const fs = require('fs')
 const AWS = require('aws-sdk')
 const ytdl = require('ytdl-core')
 let { accessKeyId, secretAccessKey, bucket } = process.env
-const { ENV } = process.env
+const { IS_OFFLINE } = process.env
 let S3 = undefined
 const s3Options = {
     s3ForcePathStyle: true,
-    accessKeyId,
-    secretAccessKey
+    credentials: {
+        accessKeyId,
+        secretAccessKey
+    }
 }
 
-if (ENV === 'development') {
+if (IS_OFFLINE) {
     bucket = 'local-bucket'
     accessKeyId = secretAccessKey = 'S3RVER'
-    s3Options['endpoint'] = new AWS.endpoint('http://localhost:3003')
+    s3Options.credentials = {
+        accessKeyId,
+        secretAccessKey
+    }
+    s3Options['endpoint'] = new AWS.Endpoint('http://localhost:3003')
 }
 
 S3 = new AWS.S3(s3Options)
@@ -56,9 +62,11 @@ exports.generateVideo = async (url, title) => {
             // generate video if it doesn't exist in S3
             console.log('video doesn\'t exist in s3')
             const writter = fs.createWriteStream(dir)
+            console.log('start video download')
             const streamYtb = ytdl(url, { filter: 'videoandaudio' }).pipe(writter)
             const linkObject = await new Promise((resolve) => {
                 streamYtb.on('finish', async () => {
+                    console.log('finished video download')
                     const fileStream = fs.createReadStream(dir)
                     await new Promise((resolve) => {
                         S3.putObject({
