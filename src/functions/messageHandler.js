@@ -1,4 +1,4 @@
-const { generateVideo } = require('./src/functions/generateVideo')
+const { generateVideo } = require('./generateVideo')
 const { TWILIO_ACCOUNT_SID: accountSid, TWILIO_AUTH_TOKEN: authToken } = process.env
 const client = require('twilio')(accountSid, authToken)
 const ytdl = require('ytdl-core')
