@@ -17,8 +17,8 @@ variables:
 before_script:
   - apk add --no-cache py-pip
   - pip install awscli
-  - aws configure set aws_access_key_id $ACK_ID
-  - aws configure set aws_secret_access_key $SAK
+  - aws configure set aws_access_key_id $accessKeyId
+  - aws configure set aws_secret_access_key $secretAccessKey
   - aws configure set default.region $AWS_REGION
 
 Release Docker Image:
