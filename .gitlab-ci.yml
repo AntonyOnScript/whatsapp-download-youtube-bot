@@ -8,11 +8,11 @@ stages:
   - deploy
 
 variables:
-  AWS_REGION: "sa-east-1"
   ECR_REPO: "$ECR_REPO"
-  LOCAL_REPO: "$LOCAL_REPO"
-  ACK_ID: "$ACK_ID"
-  SAK: "$SAK"
+  AWS_REGION: "us-east-1"
+  LOCAL_REPO: "local"
+  accessKeyId: "$accessKeyId"
+  secretAccessKey: "$secretAccessKey"
 
 before_script:
   - apk add --no-cache py-pip
@@ -37,6 +37,6 @@ Deploy Lambda Code:
   script:
     - apk add --no-cache py-pip
     - pip install awscli
-    - aws lambda update-function-code --function-name lambda_node-down-ytb --image-uri $ECR_REPO:latest
+    - aws lambda update-function-code --function-name down-ytb --image-uri $ECR_REPO:latest
   only:
     - master
