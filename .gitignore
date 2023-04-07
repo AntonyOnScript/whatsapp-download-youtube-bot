@@ -3,6 +3,7 @@ node_modules
 jspm_packages
 s3/*
 videos/*
+.terraform
 
 # Serverless directories
 .serverless
