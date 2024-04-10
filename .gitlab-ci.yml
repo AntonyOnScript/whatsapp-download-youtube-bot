@@ -9,7 +9,7 @@ stages:
 
 variables:
   ECR_REPO: "$ECR_REPO"
-  AWS_REGION: "us-east-1"
+  AWS_REGION: "sa-east-1"
   LOCAL_REPO: "local"
   accessKeyId: "$accessKeyId"
   secretAccessKey: "$secretAccessKey"
@@ -25,10 +25,10 @@ Release Docker Image:
   stage: release
   script:
     - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO
-    - docker pull $ECR_REPO
-    - docker build -t $LOCAL_REPO .
-    - docker tag $LOCAL_REPO:latest $ECR_REPO:latest
-    - docker push $ECR_REPO:latest
+    - docker pull $ECR_REPO # pull remote docker image
+    - docker build -t $LOCAL_REPO . # attach current code to a local docker image
+    - docker tag $LOCAL_REPO:latest $ECR_REPO:latest # attach local docker image to remote docker image
+    - docker push $ECR_REPO:latest # push remote docker image
   only:
     - master
       
