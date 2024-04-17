@@ -20,6 +20,7 @@ exports.messageHandler = async (event, response) => {
         if (videoLink) {
             console.log('before validate url')
             const isTrustedLink = ytdl.validateURL(videoLink)
+            console.log('isTrustedLink: ', isTrustedLink)
             if (isTrustedLink) {
                 const fromNumber = bodyContent.get('From')
                 const toNumber = bodyContent.get('To')
