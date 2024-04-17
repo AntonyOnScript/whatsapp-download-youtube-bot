@@ -85,10 +85,15 @@ resource "aws_ecr_repository" "down_ytb" {
   }
 }
 
+data "aws_ecr_image" "down_ytb" {
+  repository_name = "down-ytb"
+  image_tag       = "latest"
+}
+
 resource "aws_lambda_function" "down_ytb" {
   function_name = var.projectName
   role          = aws_iam_role.lambda_role.arn
-  image_uri     = aws_ecr_repository.down_ytb.repository_url
+  image_uri     = "${aws_ecr_repository.down_ytb.repository_url}@${data.aws_ecr_image.down_ytb.image_digest}"
   package_type  = "Image"
   runtime       = "nodejs16.x"
 }
