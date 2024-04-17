@@ -43,14 +43,14 @@ resources:
         
 functions:
   getYoutubeVideo:
-    handler: app.handler
+    handler: index.handler
     timeout: 200
     events:
       - httpApi:
           path: /
           method: get
   postYoutubeVideo:
-    handler: app.handler
+    handler: index.handler
     timeout: 200
     events:
       - httpApi:
