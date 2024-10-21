@@ -8,11 +8,11 @@ terraform {
 }
 
 provider "aws" {
-  region = "sa-east-1"
+  region = "us-east-1"
 }
 
 resource "aws_s3_bucket" "down_ytb" {
-  bucket = var.projectName
+  bucket = "down-ytbb"
 }
 
 
@@ -86,8 +86,12 @@ resource "aws_ecr_repository" "down_ytb" {
 }
 
 data "aws_ecr_image" "down_ytb" {
-  repository_name = "down-ytb"
+  repository_name = aws_ecr_repository.down_ytb.name
   image_tag       = "latest"
+
+  depends_on = [
+    aws_ecr_repository.down_ytb
+  ]
 }
 
 resource "aws_lambda_function" "down_ytb" {
