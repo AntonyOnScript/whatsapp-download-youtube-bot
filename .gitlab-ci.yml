@@ -23,7 +23,6 @@ Release Docker Image:
     - aws configure set aws_secret_access_key $secretAccessKey
     - aws configure set default.region $AWS_REGION
     - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO
-    - docker pull $ECR_REPO # pull remote docker image
     - docker build -t $LOCAL_REPO . # attach current code to a local docker image
     - docker tag $LOCAL_REPO:latest $ECR_REPO:latest # attach local docker image to remote docker image
     - docker push $ECR_REPO:latest # push remote docker image
@@ -38,6 +37,6 @@ Deploy Lambda Code:
     - aws configure set aws_access_key_id $accessKeyId
     - aws configure set aws_secret_access_key $secretAccessKey
     - aws configure set default.region $AWS_REGION
-    - aws lambda update-function-code --function-name down-ytb --image-uri $ECR_REPO/down-ytb:latest
+    - aws lambda update-function-code --function-name down-ytb --image-uri $ECR_REPO:latest
   only:
     - master
